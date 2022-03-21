@@ -9,7 +9,7 @@ object TheoremKeyword: MathAsmToken
 object PrivateKeyword: MathAsmToken
 
 data class NumberToken(val value: Unit): MathAsmToken
-data class SymbolIdentifier(val name: String): MathAsmToken
+data class Identifier(val name: String): MathAsmToken
 
 
 object Equals: MathAsmToken
