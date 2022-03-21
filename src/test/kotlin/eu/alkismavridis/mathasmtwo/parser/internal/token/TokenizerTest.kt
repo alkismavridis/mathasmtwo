@@ -33,6 +33,13 @@ internal class TokenizerTest {
       .expectEof()
   }
 
+  @Test
+  fun `should skip multiple white spaces`() {
+    this.createTokenizer("  \t   \t hi")
+      .expectIdentifier("hi")
+      .expectEof()
+  }
+
   private fun createTokenizer(input: String): Tokenizer {
     return Tokenizer(input.reader())
   }
