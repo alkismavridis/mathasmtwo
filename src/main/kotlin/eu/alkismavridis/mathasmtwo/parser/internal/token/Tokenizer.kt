@@ -1,13 +1,12 @@
 package eu.alkismavridis.mathasmtwo.parser.internal.token
 
 import java.io.Reader
-import kotlin.math.E
 
 class Tokenizer(private val input: Reader) {
   private var rolledBackCharacter: Char? = null
 
   fun next(): MathAsmToken {
-    val nextChar = this.nextChar() ?: return EndOfFile
+    val nextChar = this.getNextActiveChar() ?: return EndOfFile
 
     if (nextChar.isIdentifierStart()) {
       this.rollbackChar(nextChar)
@@ -53,6 +52,21 @@ class Tokenizer(private val input: Reader) {
       this.rolledBackCharacter = null
       return rolledBack
     }
+  }
+
+  private fun getNextActiveChar(): Char? {
+    while(true) {
+      val nextChar = this.nextChar() ?: return null
+      when {
+        nextChar.isWhitespace() -> continue
+        nextChar.isCommentStart() -> this.skipComment()
+        else -> return nextChar
+      }
+    }
+  }
+
+  private fun skipComment() {
+
   }
 
   private fun rollbackChar(char: Char) {

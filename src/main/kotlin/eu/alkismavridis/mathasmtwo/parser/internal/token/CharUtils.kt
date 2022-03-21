@@ -7,3 +7,7 @@ fun Char.isIdentifierStart(): Boolean {
 fun Char.isIdentifierContinuation(): Boolean {
   return this.isLetter() || this.isDigit()
 }
+
+fun Char.isCommentStart(): Boolean {
+  return this == '/'
+}

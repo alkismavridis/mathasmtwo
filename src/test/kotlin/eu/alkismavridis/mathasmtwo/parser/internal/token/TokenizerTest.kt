@@ -1,5 +1,7 @@
 package eu.alkismavridis.mathasmtwo.parser.internal.token
 
+import eu.alkismavridis.mathasmtwo.testutils.parser.expectEof
+import eu.alkismavridis.mathasmtwo.testutils.parser.expectIdentifier
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -12,20 +14,23 @@ internal class TokenizerTest {
 
   @Test
   fun `should read identifier of one character`() {
-    val tokenizer = this.createTokenizer("h")
-    val idToken = tokenizer.next() as SymbolIdentifier
-    assertThat(idToken.name).isEqualTo("h")
-
-    assertThat(tokenizer.next()).isEqualTo(EndOfFile)
+    this.createTokenizer("h")
+      .expectIdentifier("h")
+      .expectEof()
   }
 
   @Test
   fun `should read identifier of two characters`() {
-    val tokenizer = this.createTokenizer("hi")
-    val idToken = tokenizer.next() as SymbolIdentifier
-    assertThat(idToken.name).isEqualTo("hi")
+    this.createTokenizer("hi")
+      .expectIdentifier("hi")
+      .expectEof()
+  }
 
-    assertThat(tokenizer.next()).isEqualTo(EndOfFile)
+  @Test
+  fun `should skip one white space`() {
+    this.createTokenizer(" hi")
+      .expectIdentifier("hi")
+      .expectEof()
   }
 
   private fun createTokenizer(input: String): Tokenizer {

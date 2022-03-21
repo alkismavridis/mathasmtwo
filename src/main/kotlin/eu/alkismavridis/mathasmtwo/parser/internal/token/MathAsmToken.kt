@@ -8,8 +8,8 @@ object AxiomKeyword: MathAsmToken
 object TheoremKeyword: MathAsmToken
 object PrivateKeyword: MathAsmToken
 
-class NumberToken(val value: Unit): MathAsmToken
-class SymbolIdentifier(val name: String): MathAsmToken
+data class NumberToken(val value: Unit): MathAsmToken
+data class SymbolIdentifier(val name: String): MathAsmToken
 
 
 object Equals: MathAsmToken
@@ -23,7 +23,7 @@ object BracketOpen: MathAsmToken
 object BracketClose: MathAsmToken
 
 
-class AxiomSymbol(val text: String): MathAsmToken
+data class AxiomSymbol(val text: String): MathAsmToken
 object BidirectionalSeparator: MathAsmToken
 object UnidirectionalSeparator: MathAsmToken
 
