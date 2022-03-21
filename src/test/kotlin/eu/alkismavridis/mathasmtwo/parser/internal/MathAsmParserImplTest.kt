@@ -1,5 +1,6 @@
-package eu.alkismavridis.mathasmtwo.parser
+package eu.alkismavridis.mathasmtwo.parser.internal
 
+import eu.alkismavridis.mathasmtwo.parser.MathAsmParseResult
 import eu.alkismavridis.mathasmtwo.proof.ProofExecutor
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
