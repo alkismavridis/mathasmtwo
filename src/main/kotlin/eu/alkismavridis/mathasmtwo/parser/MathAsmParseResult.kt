@@ -1,8 +1,8 @@
 package eu.alkismavridis.mathasmtwo.parser
 
-import eu.alkismavridis.mathasmtwo.proof.MathAsmStatement
+import eu.alkismavridis.mathasmtwo.proof.MathasmStatement
 
 // WHAT WE RETURN
 data class MathAsmParseResult(
-  val statements: List<MathAsmStatement>,
+  val statements: List<MathasmStatement>,
 )

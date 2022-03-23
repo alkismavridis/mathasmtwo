@@ -30,6 +30,27 @@ class Tokenizer(private val input: Reader) {
     }
   }
 
+  fun getNextAxiomSymbol(): String? {
+    val builder = StringBuilder()
+    while (true) {
+      val nextChar = if (builder.isEmpty()) this.getNextActiveChar() else this.getNextChar()
+      if (nextChar == null) throw IllegalEofException("Eof found while parsing axiom")
+
+      if (nextChar == '"') {
+        this.rollbackChar(nextChar)
+        break
+        // Axiom stops
+      } else if(nextChar.isWhitespace()) {
+        break
+        // symbol stops. axiom continues
+      }
+
+      builder.append(nextChar)
+    }
+
+    return builder.toString().ifEmpty { null }
+  }
+
   private fun getAsDigit(nextChar: Char): MathAsmToken? {
     if (nextChar.isDigit()) {
       this.rollbackChar(nextChar)

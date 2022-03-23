@@ -17,12 +17,6 @@ interface ProofExecutor {
   fun replaceSingleLeft(zeroBasedIndex: Int, statement: MathasmStatement): MathasmStatement
 
   fun invert(statement: MathasmStatement): MathasmStatement
-  fun getStatements(): List<MathAsmStatement>
+  fun getStatements(): List<MathasmStatement>
 }
 
-interface MathasmStatement {
-  fun getLeft(): List<String>
-  fun getRight(): List<String>
-  fun getWeight(): Int
-  fun isBidirectional(): Boolean
-}

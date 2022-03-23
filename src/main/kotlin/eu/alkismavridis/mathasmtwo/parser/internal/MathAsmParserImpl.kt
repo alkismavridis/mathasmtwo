@@ -18,7 +18,7 @@ class MathAsmParserImpl: MathAsmParser {
       this.parseStatement(tokenizer, nextToken, proofExecutor)
     }
 
-    val exportedStatements = proofExecutor.getStatements().filter { it.isPublic }
+    val exportedStatements = proofExecutor.getStatements().filter { it.isPublic() }
     return MathAsmParseResult(exportedStatements)
   }
 
