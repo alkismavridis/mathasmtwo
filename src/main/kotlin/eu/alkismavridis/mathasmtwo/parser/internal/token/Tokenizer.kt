@@ -8,22 +8,40 @@ class Tokenizer(private val input: Reader) {
   fun next(): MathAsmToken {
     val nextChar = this.getNextActiveChar() ?: return EndOfFile
 
-    val symbol = this.toSymbol(nextChar)
-    if (symbol != null) {
-      return symbol
+    return this.getAsEol(nextChar)
+      ?: this.getAsSymbol(nextChar)
+      ?: this.getAsIdOrKeyword(nextChar)
+      ?: this.getAsDigit(nextChar)
+      ?: throw UnexpectedCharacterException("Unexpected start of token: $nextChar")
+  }
+
+  private fun getAsDigit(nextChar: Char): MathAsmToken? {
+    if (nextChar.isDigit()) {
+      this.rollbackChar(nextChar)
+      val num = this.readNumber()
+      return NumberToken(num)
     }
 
+    return null
+  }
+
+  private fun getAsEol(nextChar: Char): EndOfLine? {
+    return if (nextChar == '\n') EndOfLine else null
+  }
+
+
+  private fun getAsIdOrKeyword(nextChar: Char): MathAsmToken? {
     if (nextChar.isIdentifierStart()) {
       this.rollbackChar(nextChar)
       val id = this.readIdentifier()
       return this.createKeywordOrIdentifier(id)
     }
 
-    return EndOfFile
+    return null
   }
 
   private fun createKeywordOrIdentifier(value: String): MathAsmToken {
-    return when(value) {
+    return when (value) {
       "axiom" -> AxiomKeyword
       "theorem" -> TheoremKeyword
       "private" -> PrivateKeyword
@@ -31,8 +49,8 @@ class Tokenizer(private val input: Reader) {
     }
   }
 
-  private fun toSymbol(char: Char): MathAsmToken? {
-    return when(char) {
+  private fun getAsSymbol(char: Char): MathAsmToken? {
+    return when (char) {
       '=' -> Equals
       '.' -> Dot
       ',' -> Comma
@@ -45,9 +63,24 @@ class Tokenizer(private val input: Reader) {
     }
   }
 
+  private fun readNumber(): Int {
+    val builder = StringBuilder()
+    while (true) {
+      val nextChar = this.nextChar() ?: break
+      if (nextChar.isDigit()) {
+        builder.append(nextChar)
+      } else {
+        this.rollbackChar(nextChar)
+        break
+      }
+    }
+
+    return builder.toString().toInt()
+  }
+
   private fun readIdentifier(): String {
     val builder = StringBuilder()
-    while(true) {
+    while (true) {
       val nextChar = this.nextChar() ?: break
       if (nextChar.isIdentifierContinuation()) {
         builder.append(nextChar)
@@ -59,7 +92,6 @@ class Tokenizer(private val input: Reader) {
 
     return builder.toString()
   }
-
 
 
   private fun nextChar(): Char? {
@@ -74,7 +106,7 @@ class Tokenizer(private val input: Reader) {
   }
 
   private fun getNextActiveChar(): Char? {
-    while(true) {
+    while (true) {
       val nextChar = this.nextChar() ?: return null
       when {
         nextChar == '\n' -> return nextChar
@@ -99,9 +131,10 @@ class Tokenizer(private val input: Reader) {
   }
 
   private fun parseSingleLineComment() {
-    while(true) {
-      when(val nextChar = this.nextChar()) {
+    while (true) {
+      when (val nextChar = this.nextChar()) {
         null -> return
+
         '\n' -> {
           this.rollbackChar(nextChar)
           return

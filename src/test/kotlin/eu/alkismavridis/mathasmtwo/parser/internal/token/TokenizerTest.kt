@@ -1,9 +1,8 @@
 package eu.alkismavridis.mathasmtwo.parser.internal.token
 
-import eu.alkismavridis.mathasmtwo.testutils.parser.expect
-import eu.alkismavridis.mathasmtwo.testutils.parser.expectEof
-import eu.alkismavridis.mathasmtwo.testutils.parser.expectIdentifier
+import eu.alkismavridis.mathasmtwo.testutils.parser.*
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 
 internal class TokenizerTest {
@@ -44,6 +43,7 @@ internal class TokenizerTest {
   @Test
   fun `should skip single line comment`() {
     this.createTokenizer("//This is a comment\nhello")
+      .expectEol()
       .expectIdentifier("hello")
       .expectEof()
   }
@@ -79,6 +79,33 @@ internal class TokenizerTest {
       .expect(TheoremKeyword)
       .expect(Dot)
       .expect(PrivateKeyword)
+      .expectEof()
+  }
+
+  @Test
+  fun `should throw on illegal start of token`() {
+    val tokenizer = this.createTokenizer("hello #")
+      .expectIdentifier("hello")
+
+    assertThatThrownBy { tokenizer.next() }
+      .isInstanceOf(Tokenizer.UnexpectedCharacterException::class.java)
+      .hasMessageContaining("Unexpected start of token")
+  }
+
+  @Test
+  fun `should be able to read numbers ending with operator`() {
+    this.createTokenizer("hello 234.")
+      .expectIdentifier("hello")
+      .expectNumber(234)
+      .expect(Dot)
+      .expectEof()
+  }
+
+  @Test
+  fun `should be able to read numbers ending with eof`() {
+    this.createTokenizer("hello 234")
+      .expectIdentifier("hello")
+      .expectNumber(234)
       .expectEof()
   }
 
