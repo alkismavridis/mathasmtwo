@@ -8,7 +8,7 @@ object AxiomKeyword: MathAsmToken
 object TheoremKeyword: MathAsmToken
 object PrivateKeyword: MathAsmToken
 
-data class NumberToken(val value: Unit): MathAsmToken
+data class NumberToken(val value: Int): MathAsmToken
 data class Identifier(val name: String): MathAsmToken
 
 

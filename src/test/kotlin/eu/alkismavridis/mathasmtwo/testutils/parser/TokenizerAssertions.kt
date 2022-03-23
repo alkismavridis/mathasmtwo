@@ -1,9 +1,6 @@
 package eu.alkismavridis.mathasmtwo.testutils.parser
 
-import eu.alkismavridis.mathasmtwo.parser.internal.token.EndOfFile
-import eu.alkismavridis.mathasmtwo.parser.internal.token.Identifier
-import eu.alkismavridis.mathasmtwo.parser.internal.token.MathAsmToken
-import eu.alkismavridis.mathasmtwo.parser.internal.token.Tokenizer
+import eu.alkismavridis.mathasmtwo.parser.internal.token.*
 import org.assertj.core.api.Assertions.assertThat
 
 fun Tokenizer.expectIdentifier(value: String): Tokenizer {
@@ -11,8 +8,18 @@ fun Tokenizer.expectIdentifier(value: String): Tokenizer {
   return this
 }
 
+fun Tokenizer.expectNumber(value: Int): Tokenizer {
+  assertThat(this.next()).isEqualTo(NumberToken(value))
+  return this
+}
+
 fun Tokenizer.expectEof(): Tokenizer {
   assertThat(this.next()).isEqualTo(EndOfFile)
+  return this
+}
+
+fun Tokenizer.expectEol(): Tokenizer {
+  assertThat(this.next()).isEqualTo(EndOfLine)
   return this
 }
 

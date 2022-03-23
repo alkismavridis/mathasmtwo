@@ -1,6 +1,10 @@
 package eu.alkismavridis.mathasmtwo.proof
 
 interface ProofExecutor {
+
+  fun defineStatement(statement: MathasmStatement)
+
+
   fun cloneRightSideOf(statement: MathasmStatement): MathasmStatement
   fun cloneLeftSideOf(statement: MathasmStatement): MathasmStatement
   fun clone(statement: MathasmStatement): MathasmStatement
@@ -13,11 +17,6 @@ interface ProofExecutor {
   fun replaceSingleLeft(zeroBasedIndex: Int, statement: MathasmStatement): MathasmStatement
 
   fun invert(statement: MathasmStatement): MathasmStatement
+  fun getStatements(): List<MathasmStatement>
 }
 
-interface MathasmStatement {
-  fun getLeft(): List<String>
-  fun getRight(): List<String>
-  fun getWeight(): Int
-  fun isBidirectional(): Boolean
-}
