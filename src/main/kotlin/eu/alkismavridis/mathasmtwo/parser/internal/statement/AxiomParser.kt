@@ -1,8 +1,6 @@
 package eu.alkismavridis.mathasmtwo.parser.internal.statement
 
-import eu.alkismavridis.mathasmtwo.parser.internal.token.Equals
-import eu.alkismavridis.mathasmtwo.parser.internal.token.Quote
-import eu.alkismavridis.mathasmtwo.parser.internal.token.Tokenizer
+import eu.alkismavridis.mathasmtwo.parser.internal.token.*
 import eu.alkismavridis.mathasmtwo.proof.MathAsmAxiom
 import eu.alkismavridis.mathasmtwo.proof.ProofExecutor
 
@@ -10,8 +8,8 @@ class AxiomParser(private val tokenizer: Tokenizer, private val proofExecutor: P
   fun parse() {
     val name = tokenizer.requireIdentifier().name
     tokenizer.require(Equals)
-    tokenizer.require(Quote)
 
+    val weight = this.readOrSkipWeight()
     val parsingData = AxiomParsingData()
 
     while (true) {
@@ -26,10 +24,26 @@ class AxiomParser(private val tokenizer: Tokenizer, private val proofExecutor: P
       parsingData.leftSymbols,
       parsingData.rightSymbols,
       isBidirectional = parsingData.isBidirectional(),
-      weight = 0, // TODO support larger weights
+      weight = weight
     )
 
     proofExecutor.defineStatement(statement)
+  }
+
+  private fun readOrSkipWeight(): Int {
+    when (val nextToken = this.tokenizer.next()) {
+      is Quote -> return 0
+
+      is BracketOpen -> {
+        val weight = this.tokenizer.requireNumber().value
+        if (weight < 0) throw IllegalAxiomException("Weight cannot be negative. Found $weight")
+        this.tokenizer.require(BracketClose)
+        this.tokenizer.require(Quote)
+        return weight
+      }
+
+      else -> throw IllegalAxiomException("Expected quote or weight, such as <2> but found $nextToken instead")
+    }
   }
 
   private fun validateParsingData(parsingData: AxiomParsingData) {

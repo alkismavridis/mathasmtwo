@@ -21,6 +21,12 @@ class Tokenizer(private val input: Reader) {
       ?: throw UnexpectedTokenException("Expected identifier but found $next instead.")
   }
 
+  fun requireNumber(): NumberToken {
+    val next = this.next()
+    return next as? NumberToken
+      ?: throw UnexpectedTokenException("Expected number but found $next instead.")
+  }
+
   fun require(expected: MathAsmToken): MathAsmToken {
     val next = this.next()
     if(next == expected) {

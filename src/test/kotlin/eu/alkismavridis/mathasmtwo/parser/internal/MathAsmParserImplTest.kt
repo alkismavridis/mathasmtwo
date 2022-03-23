@@ -82,11 +82,18 @@ internal class MathAsmParserImplTest {
   }
 
   @Test
+  fun  `should parse weight public axioms`() {
+    val result = this.parseString("axiom SOME_AXIOM = <2> \"true ==> ! false\"")
+    assertThat(result.statements).hasSize(1)
+    assertThat(result.statements.first().getWeight()).isEqualTo(2)
+  }
+
+  @Test
   fun  `should parse 3 axioms public axioms`() {
     val mathAsmText = """
       axiom AXIOM_1 = "true ==> ! false"
       
-      axiom AXIOM_2 = "false ==> ! true"
+      axiom AXIOM_2 = <2> "false ==> ! true"
     """.trimIndent()
     val result = this.parseString(mathAsmText)
 
