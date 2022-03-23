@@ -2,12 +2,13 @@ package eu.alkismavridis.mathasmtwo.parser.internal
 
 import eu.alkismavridis.mathasmtwo.parser.MathAsmParseResult
 import eu.alkismavridis.mathasmtwo.proof.ProofExecutor
+import eu.alkismavridis.mathasmtwo.testutils.proof.returnEmptyStatements
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 internal class MathAsmParserImplTest {
-  private val executor = mockk<ProofExecutor>()
+  private val executor = mockk<ProofExecutor>().returnEmptyStatements()
   private val parser = MathAsmParserImpl()
 
   @Test
@@ -24,7 +25,7 @@ internal class MathAsmParserImplTest {
 
   @Test
   fun  `file with only a multi line comment should return empty result`() {
-    val result = this.parseString("/*This is a multi\nline\n comment")
+    val result = this.parseString("/*This is a multi\nline\n comment*/")
     assertThat(result.statements).isEmpty()
   }
 

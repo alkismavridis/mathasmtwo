@@ -5,7 +5,7 @@ fun Char.isIdentifierStart(): Boolean {
 }
 
 fun Char.isIdentifierContinuation(): Boolean {
-  return this.isLetter() || this.isDigit()
+  return this.isLetter() || this.isDigit() || this == '_'
 }
 
 fun Char.isCommentStart(): Boolean {

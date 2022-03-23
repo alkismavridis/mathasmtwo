@@ -15,6 +15,21 @@ class Tokenizer(private val input: Reader) {
       ?: throw UnexpectedCharacterException("Unexpected start of token: $nextChar")
   }
 
+  fun requireIdentifier(): Identifier {
+    val next = this.next()
+    return next as? Identifier
+      ?: throw UnexpectedTokenException("Expected identifier but found $next instead.")
+  }
+
+  fun require(expected: MathAsmToken): MathAsmToken {
+    val next = this.next()
+    if(next == expected) {
+      return next
+    } else {
+      throw UnexpectedTokenException("Expected $expected but found $next instead.")
+    }
+  }
+
   private fun getAsDigit(nextChar: Char): MathAsmToken? {
     if (nextChar.isDigit()) {
       this.rollbackChar(nextChar)
@@ -66,7 +81,7 @@ class Tokenizer(private val input: Reader) {
   private fun readNumber(): Int {
     val builder = StringBuilder()
     while (true) {
-      val nextChar = this.nextChar() ?: break
+      val nextChar = this.getNextChar() ?: break
       if (nextChar.isDigit()) {
         builder.append(nextChar)
       } else {
@@ -81,7 +96,7 @@ class Tokenizer(private val input: Reader) {
   private fun readIdentifier(): String {
     val builder = StringBuilder()
     while (true) {
-      val nextChar = this.nextChar() ?: break
+      val nextChar = this.getNextChar() ?: break
       if (nextChar.isIdentifierContinuation()) {
         builder.append(nextChar)
       } else {
@@ -94,7 +109,7 @@ class Tokenizer(private val input: Reader) {
   }
 
 
-  private fun nextChar(): Char? {
+  private fun getNextChar(): Char? {
     val rolledBack = this.rolledBackCharacter
     if (rolledBack == null) {
       val nextInt = this.input.read()
@@ -107,7 +122,7 @@ class Tokenizer(private val input: Reader) {
 
   private fun getNextActiveChar(): Char? {
     while (true) {
-      val nextChar = this.nextChar() ?: return null
+      val nextChar = this.getNextChar() ?: return null
       when {
         nextChar == '\n' -> return nextChar
         nextChar.isWhitespace() -> continue
@@ -118,7 +133,7 @@ class Tokenizer(private val input: Reader) {
   }
 
   private fun skipComment() {
-    val nextChar = this.nextChar()
+    val nextChar = this.getNextChar()
     when (nextChar) {
       '/' -> this.parseSingleLineComment()
       '*' -> this.parseMultiLineComment()
@@ -127,12 +142,19 @@ class Tokenizer(private val input: Reader) {
   }
 
   private fun parseMultiLineComment() {
-    TODO("Multi line comments are not supported yet")
+    while (true) {
+      val next = this.getNextChar() ?: throw IllegalEofException("End of file found while parsing comment")
+      if (next != '*') continue
+
+      val charAfterStar = this.getNextChar() ?: throw IllegalEofException("End of file found while parsing comment")
+      if (charAfterStar == '/') return
+      else this.rollbackChar(charAfterStar)
+    }
   }
 
   private fun parseSingleLineComment() {
     while (true) {
-      when (val nextChar = this.nextChar()) {
+      when (val nextChar = this.getNextChar()) {
         null -> return
 
         '\n' -> {
@@ -154,6 +176,8 @@ class Tokenizer(private val input: Reader) {
 
   class IllegalRollbackException: RuntimeException("Illegal rollback")
   class UnexpectedCharacterException(message: String): RuntimeException(message)
+  class UnexpectedTokenException(message: String): RuntimeException(message)
+  class IllegalEofException(message: String): RuntimeException(message)
 
   companion object {
     private const val EOF = -1
