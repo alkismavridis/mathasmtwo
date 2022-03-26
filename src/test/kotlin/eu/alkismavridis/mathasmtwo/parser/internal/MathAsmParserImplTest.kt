@@ -1,16 +1,19 @@
 package eu.alkismavridis.mathasmtwo.parser.internal
 
 import eu.alkismavridis.mathasmtwo.parser.MathAsmParseResult
+import eu.alkismavridis.mathasmtwo.proof.MathAsmAxiom
 import eu.alkismavridis.mathasmtwo.proof.MathasmStatement
-import eu.alkismavridis.mathasmtwo.proof.ProofExecutor
+import eu.alkismavridis.mathasmtwo.proof.ParsingEnvironment
+import eu.alkismavridis.mathasmtwo.testutils.proof.allowProofOperations
 import eu.alkismavridis.mathasmtwo.testutils.proof.outputStatementTo
 import io.mockk.mockk
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 internal class MathAsmParserImplTest {
   private val definedStatements =  mutableListOf<MathasmStatement>()
-  private val executor = mockk<ProofExecutor>().outputStatementTo(definedStatements)
+  private val env = mockk<ParsingEnvironment>().outputStatementTo(definedStatements)
   private val parser = MathAsmParserImpl()
 
   @Test
@@ -89,7 +92,7 @@ internal class MathAsmParserImplTest {
   }
 
   @Test
-  fun  `should parse 3 axioms public axioms`() {
+  fun  `should parse 2 axioms`() {
     val mathAsmText = """
       axiom AXIOM_1 = "true ==> ! false"
       
@@ -102,9 +105,152 @@ internal class MathAsmParserImplTest {
     assertThat(result.statements[1].getName()).isEqualTo("AXIOM_2")
   }
 
+  @Test
+  fun  `should parse simple theorem`() {
+    this.env.defineAxiom("AXIOM_1").allowProofOperations()
+    val result = this.parseString("theorem MyTheorem = AXIOM_1.rCopy")
+    assertThat(result.statements).hasSize(2)
+    assertThat(result.statements[1].getName()).isEqualTo("MyTheorem")
+  }
+
+  @Test
+  fun  `should parse theorem ending in new line`() {
+    this.env.defineAxiom("AXIOM_1").allowProofOperations()
+    val result = this.parseString("theorem MyTheorem = AXIOM_1.rCopy\n")
+    assertThat(result.statements).hasSize(2)
+    assertThat(result.statements[1].getName()).isEqualTo("MyTheorem")
+  }
+
+  @Test
+  fun  `should allow expression chaining in new lines`() {
+    val mathAsmText = """
+      theorem MyTheorem = AXIOM_1
+        .rCopy
+        .invert
+    """.trimIndent()
+
+    this.env.defineAxiom("AXIOM_1").allowProofOperations()
+    val result = this.parseString(mathAsmText)
+    assertThat(result.statements).hasSize(2)
+    assertThat(result.statements[1].getName()).isEqualTo("MyTheorem")
+  }
+
+  @Test
+  fun  `should perform right copy`() {
+    this.env.defineAxiom("AXIOM_1").allowProofOperations()
+    this.parseString("theorem MyTheorem = AXIOM_1.rCopy")
+    verify(exactly = 1) { env.cloneRightSideOf(any()) }
+  }
+
+  @Test
+  fun  `should perform left copy`() {
+    this.env.defineAxiom("AXIOM_1").allowProofOperations()
+    this.parseString("theorem MyTheorem = AXIOM_1.lCopy")
+    verify(exactly = 1) { env.cloneLeftSideOf(any()) }
+  }
+
+  @Test
+  fun  `should perform invert`() {
+    this.env.defineAxiom("AXIOM_1").allowProofOperations()
+    this.parseString("theorem MyTheorem = AXIOM_1.invert")
+    verify(exactly = 1) { env.invert(any()) }
+  }
+
+  @Test
+  fun  `should perform replace-all operation`() {
+    this.env
+      .defineAxiom("AXIOM_1")
+      .defineAxiom("AXIOM_2")
+      .allowProofOperations()
+    this.parseString("theorem MyTheorem = AXIOM_1.all(AXIOM_2)")
+    verify(exactly = 1) { env.replaceAll(any(), any()) }
+  }
+
+  @Test
+  fun  `should perform replace-in-left operation`() {
+    this.env
+      .defineAxiom("AXIOM_1")
+      .defineAxiom("AXIOM_2")
+      .allowProofOperations()
+    this.parseString("theorem MyTheorem = AXIOM_1.left(AXIOM_2)")
+    verify(exactly = 1) { env.replaceLeft(any(), any()) }
+  }
+
+  @Test
+  fun  `should perform replace-in-right operation`() {
+    this.env
+      .defineAxiom("AXIOM_1")
+      .defineAxiom("AXIOM_2")
+      .allowProofOperations()
+    this.parseString("theorem MyTheorem = AXIOM_1.right(AXIOM_2)")
+    verify(exactly = 1) { env.replaceRight(any(), any()) }
+  }
+
+  @Test
+  fun  `should perform replace-single-in-left operation`() {
+    this.env
+      .defineAxiom("AXIOM_1")
+      .defineAxiom("AXIOM_2")
+      .allowProofOperations()
+    this.parseString("theorem MyTheorem = AXIOM_1.left(AXIOM_2, 5)")
+    verify(exactly = 1) { env.replaceSingleLeft(any(), any(), 5) }
+  }
+
+  @Test
+  fun  `should perform replace-single-in-right operation`() {
+    this.env
+      .defineAxiom("AXIOM_1")
+      .defineAxiom("AXIOM_2")
+      .allowProofOperations()
+    this.parseString("theorem MyTheorem = AXIOM_1.right(AXIOM_2, 7)")
+    verify(exactly = 1) { env.replaceSingleRight(any(), any(), 7) }
+  }
+
+  @Test
+  fun  `should execute multiple chained operations`() {
+    this.env
+      .defineAxiom("AXIOM_1")
+      .defineAxiom("AXIOM_2")
+      .allowProofOperations()
+    this.parseString("""
+      theorem MyTheorem = AXIOM_1
+        .rCopy
+        .right(AXIOM_2, 7)
+        .left(AXIOM_1)
+        .all(AXIOM_2)
+    """)
+    verify(exactly = 1) { env.cloneRightSideOf(any()) }
+    verify(exactly = 1) { env.replaceSingleRight(any(), any(), 7) }
+    verify(exactly = 1) { env.replaceLeft(any(), any()) }
+    verify(exactly = 1) { env.replaceAll(any(), any()) }
+  }
+
+  @Test
+  fun  `should execute nexted expressions`() {
+    this.env
+      .defineAxiom("AXIOM_1")
+      .defineAxiom("AXIOM_2")
+      .allowProofOperations()
+    this.parseString("""
+      theorem MyTheorem = AXIOM_1
+        .rCopy
+        .right(AXIOM_2.rCopy.invert.all(AXIOM_1.invert), 7)
+    """)
+    verify(exactly = 2) { env.cloneRightSideOf(any()) }
+    verify(exactly = 2) { env.invert(any()) }
+    verify(exactly = 1) { env.replaceAll(any(), any()) }
+    verify(exactly = 1) { env.replaceSingleRight(any(), any(), 7) }
+  }
+
+
+  private fun ParsingEnvironment.defineAxiom(name: String): ParsingEnvironment {
+    val axiom = MathAsmAxiom(name, listOf("a", "b"), listOf("c"), isBidirectional = true, weight = 2)
+    definedStatements.add(axiom)
+    return this
+  }
 
 
   private fun parseString(input: String): MathAsmParseResult {
-    return this.parser.parse(input.reader(), executor)
+    return this.parser.parse(input.reader(), env)
   }
 }

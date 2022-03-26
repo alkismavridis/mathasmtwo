@@ -1,11 +1,17 @@
 package eu.alkismavridis.mathasmtwo.parser.internal.token
 
 import java.io.Reader
+import java.util.*
 
 class Tokenizer(private val input: Reader) {
   private var rolledBackCharacter: Char? = null
+  private val rolledbackTokens = ArrayDeque<MathAsmToken>()
 
   fun next(): MathAsmToken {
+    if (this.rolledbackTokens.isNotEmpty()) {
+      return this.rolledbackTokens.pop()
+    }
+
     val nextChar = this.getNextActiveChar() ?: return EndOfFile
 
     return this.getAsEol(nextChar)
@@ -29,11 +35,15 @@ class Tokenizer(private val input: Reader) {
 
   fun require(expected: MathAsmToken): MathAsmToken {
     val next = this.next()
-    if(next == expected) {
+    if (next == expected) {
       return next
     } else {
       throw UnexpectedTokenException("Expected $expected but found $next instead.")
     }
+  }
+
+  fun rollbackToken(token: MathAsmToken) {
+    this.rolledbackTokens.push(token)
   }
 
   fun getNextAxiomSymbol(): String? {
@@ -46,7 +56,7 @@ class Tokenizer(private val input: Reader) {
         this.rollbackChar(nextChar)
         break
         // Axiom stops
-      } else if(nextChar.isWhitespace()) {
+      } else if (nextChar.isWhitespace()) {
         break
         // symbol stops. axiom continues
       }
@@ -210,8 +220,3 @@ class Tokenizer(private val input: Reader) {
     private const val EOF = -1
   }
 }
-
-
-
-
-
