@@ -18,7 +18,10 @@ class MathAsmParserImpl: MathAsmParser {
       this.parseStatement(tokenizer, nextToken, parsingEnvironment)
     }
 
-    val exportedStatements = parsingEnvironment.getStatements().filter { it.isPublic() }
+    val exportedStatements = parsingEnvironment
+      .getAllStatements()
+      .filter { it.isPublic() }
+
     return MathAsmParseResult(exportedStatements)
   }
 

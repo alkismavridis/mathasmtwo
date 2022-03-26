@@ -5,7 +5,7 @@ import eu.alkismavridis.mathasmtwo.proof.ParsingEnvironment
 import io.mockk.every
 
 fun ParsingEnvironment.returnEmptyStatements(): ParsingEnvironment {
-  every { getStatements() } returns emptyList()
+  every { getAllStatements() } returns emptyList()
   return this
 }
 
@@ -23,13 +23,13 @@ fun ParsingEnvironment.allowProofOperations(): ParsingEnvironment {
 
 
 fun ParsingEnvironment.outputStatementTo(list: MutableList<MathasmStatement>): ParsingEnvironment {
-  every { getStatements() } returns list
+  every { getAllStatements() } returns list
 
   every { defineStatement(any()) } answers {
     list.add(this.arg(0))
   }
 
-  every { getStatement(any()) } answers {
+  every { getStatementByName(any()) } answers {
     list.find { it.getName() == arg(0) } ?: throw IllegalArgumentException()
   }
 

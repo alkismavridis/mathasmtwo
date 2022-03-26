@@ -19,7 +19,7 @@ class TheoremParser(private val tokenizer: Tokenizer, private val env: ParsingEn
 
   private fun parseExpression(): MathasmStatement {
     val name = tokenizer.requireIdentifier().name
-    var currentTarget = env.getStatement(name)
+    var currentTarget = env.getStatementByName(name)
 
     while (true) {
       val tokenResult = this.getNextNonNewLine()
