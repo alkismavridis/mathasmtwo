@@ -242,6 +242,21 @@ internal class MathAsmParserImplTest {
     verify(exactly = 1) { env.replaceSingleRight(any(), any(), 7) }
   }
 
+  @Test
+  fun  `should execute statement after theorem declaration`() {
+    this.env
+      .defineAxiom("AXIOM_1")
+      .allowProofOperations()
+    val result = this.parseString("""
+      theorem MyTheorem = AXIOM_1.rCopy
+      axiom OTHER = "1 2 === 3"
+    """)
+
+    assertThat(result.statements).hasSize(3)
+    assertThat(result.statements[1].getName()).isEqualTo("MyTheorem")
+    assertThat(result.statements[2].getName()).isEqualTo("OTHER")
+  }
+
 
   private fun ParsingEnvironment.defineAxiom(name: String): ParsingEnvironment {
     val axiom = MathAsmAxiom(name, listOf("a", "b"), listOf("c"), isBidirectional = true, weight = 2)
