@@ -2,9 +2,9 @@ package eu.alkismavridis.mathasmtwo.parser.internal.statement
 
 import eu.alkismavridis.mathasmtwo.parser.internal.token.*
 import eu.alkismavridis.mathasmtwo.proof.MathAsmAxiom
-import eu.alkismavridis.mathasmtwo.proof.ProofExecutor
+import eu.alkismavridis.mathasmtwo.proof.ParsingEnvironment
 
-class AxiomParser(private val tokenizer: Tokenizer, private val proofExecutor: ProofExecutor) {
+class AxiomParser(private val tokenizer: Tokenizer, private val parsingEnvironment: ParsingEnvironment) {
   fun parse() {
     val name = tokenizer.requireIdentifier().name
     tokenizer.require(Equals)
@@ -27,7 +27,7 @@ class AxiomParser(private val tokenizer: Tokenizer, private val proofExecutor: P
       weight = weight
     )
 
-    proofExecutor.defineStatement(statement)
+    parsingEnvironment.defineStatement(statement)
   }
 
   private fun readOrSkipWeight(): Int {
